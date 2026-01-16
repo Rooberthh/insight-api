@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(composer test:*)",
+      "Bash(./vendor/bin/pest:*)"
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+{
+    "name": "rooberthh/insight-api",
+    "description": "Runtime insight into how Laravel API endpoints are actually used in practice.",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "api",
+        "openapi",
+        "swagger",
+        "testing",
+        "middleware"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Roberth Evaldsson",
+            "email": "evaldsson.roberth@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/rooberthh/insight-api/issues"
+    },
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0|^12.0",
+        "illuminate/http": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.13",
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.5",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rooberthh\\InsightApi\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Rooberthh\\InsightApi\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rooberthh\\InsightApi\\InsightApiServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "./vendor/bin/pest",
+        "pint": "./vendor/bin/pint",
+        "stan": "./vendor/bin/phpstan analyse --memory-limit=3g"
+    }
+}
