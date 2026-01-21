@@ -35,11 +35,11 @@ final class InsightApiMiddleware
 
     private function shouldCapture(): bool
     {
-        if (! config('insight-api.enabled', true)) {
+        $samplingRate = config('insight-api.sampling.rate', 1.0);
+
+        if (! $samplingRate) {
             return false;
         }
-
-        $samplingRate = config('insight-api.sampling.rate', 1.0);
 
         if ($samplingRate < 1.0) {
             return (mt_rand() / mt_getrandmax()) <= $samplingRate;
@@ -90,17 +90,7 @@ final class InsightApiMiddleware
             return '[BODY_TOO_LARGE]';
         }
 
-        $json = $request->json();
-
-        if ($json !== null && $json->count() > 0) {
-            return $json->all();
-        }
-
-        if ($request->isMethod('POST') || $request->isMethod('PUT') || $request->isMethod('PATCH')) {
-            return $request->all();
-        }
-
-        return null;
+        return $request->all();
     }
 
     private function shouldSkipBody(Request $request): bool

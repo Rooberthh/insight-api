@@ -11,8 +11,8 @@ beforeEach(function () {
         $getRoute = '/api/users/{user}/posts/{post}';
         $postRoute = '/api/users/{user}/posts/';
 
-        Route::get($getRoute, fn () => response()->json(['users' => []]));
-        Route::post($postRoute, fn () => response()->json(['created' => true], 201));
+        Route::get($getRoute, fn() => response()->json(['users' => []]));
+        Route::post($postRoute, fn() => response()->json(['created' => true], 201));
 
         $this->getRoute = $getRoute;
         $this->postRoute = $postRoute;

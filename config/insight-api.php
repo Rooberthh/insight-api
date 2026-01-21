@@ -3,19 +3,6 @@
 declare(strict_types=1);
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Enable Insight API
-    |--------------------------------------------------------------------------
-    |
-    | This option controls whether insight-api is enabled. When disabled,
-    | the middleware will pass through without capturing any data.
-    |
-    */
-
-    'enabled' => env('INSIGHT_API_ENABLED', true),
-
     /*
     |--------------------------------------------------------------------------
     | Sampling

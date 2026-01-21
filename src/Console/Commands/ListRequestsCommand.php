@@ -61,7 +61,7 @@ final class ListRequestsCommand extends Command
 
         $this->table(
             ['Method', 'Route Pattern', 'IP', 'Status', 'Time (ms)', 'Captured At'],
-            $requests->map(fn ($request) => [
+            $requests->map(fn($request) => [
                 $request->method,
                 $this->truncate($request->route_pattern, 40),
                 $request->ip_address,
@@ -105,7 +105,7 @@ final class ListRequestsCommand extends Command
             return $value;
         }
 
-        return substr($value, 0, $length - 3).'...';
+        return substr($value, 0, $length - 3) . '...';
     }
 
     private function colorStatus(int $status): string
