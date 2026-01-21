@@ -3,7 +3,8 @@
     "allow": [
       "Bash(tree:*)",
       "Bash(composer test:*)",
-      "Bash(./vendor/bin/pest:*)"
+      "Bash(./vendor/bin/pest:*)",
+      "Bash(php -r:*)"
     ]
   }
 }

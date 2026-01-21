@@ -19,6 +19,10 @@ class InsightApiRequest extends Model
         'status_code',
         'response_time_ms',
         'captured_at',
+        'request_headers',
+        'response_headers',
+        'request_body',
+        'response_body',
     ];
 
     public $timestamps = false;
