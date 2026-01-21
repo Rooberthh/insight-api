@@ -6,6 +6,7 @@ namespace Rooberthh\InsightApi\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Rooberthh\InsightApi\Models\InsightApiPayload;
 use Rooberthh\InsightApi\Models\InsightApiRequest;
 use Rooberthh\InsightApi\Services\RedactionService;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +29,7 @@ final class InsightApiMiddleware
 
         $responseTimeMs = (microtime(true) - $startTime) * 1000;
 
-        $this->captureRequest($request, $response->getStatusCode(), $responseTimeMs);
+        $this->captureRequest($request, $response, $responseTimeMs);
 
         return $response;
     }
@@ -48,21 +49,34 @@ final class InsightApiMiddleware
         return true;
     }
 
-    private function captureRequest(Request $request, int $statusCode, float $responseTimeMs): void
+    private function captureRequest(Request $request, Response $response, float $responseTimeMs): void
     {
-        $body = $this->captureRequestBody($request);
-        $headers = $this->captureRequestHeaders($request);
-
-        InsightApiRequest::create([
+        $insightRequest = InsightApiRequest::query()->create([
             'method' => $request->method(),
             'route_pattern' => $this->extractRoutePattern($request),
             'uri' => $request->getRequestUri(),
-            'headers' => $this->redactionService->redactHeaders($headers),
-            'body' => is_array($body) ? $this->redactionService->redactBody($body) : $body,
             'ip_address' => $request->ip() ?? 'unknown',
-            'status_code' => $statusCode,
+            'status_code' => $response->getStatusCode(),
             'response_time_ms' => round($responseTimeMs, 2),
             'captured_at' => now(),
+        ]);
+
+        $this->capturePayload($insightRequest, $request, $response);
+    }
+
+    private function capturePayload(InsightApiRequest $insightRequest, Request $request, Response $response): void
+    {
+        $requestBody = $this->captureRequestBody($request);
+        $requestHeaders = $this->captureRequestHeaders($request);
+        $responseBody = $this->captureResponseBody($response);
+        $responseHeaders = $this->captureResponseHeaders($response);
+
+        InsightApiPayload::query()->create([
+            'request_id' => $insightRequest->id,
+            'request_headers' => $this->redactionService->redactHeaders($requestHeaders),
+            'request_body' => is_array($requestBody) ? $this->redactionService->redactBody($requestBody) : $requestBody,
+            'response_headers' => $this->redactionService->redactHeaders($responseHeaders),
+            'response_body' => is_array($responseBody) ? $this->redactionService->redactBody($responseBody) : $responseBody,
         ]);
     }
 
@@ -118,13 +132,64 @@ final class InsightApiMiddleware
 
     /**
      * @return array<string, string>
-     * @param Request $request
      */
     private function captureRequestHeaders(Request $request): array
     {
         $headers = [];
 
         foreach ($request->headers->all() as $key => $values) {
+            $headers[$key] = is_array($values) ? implode(', ', $values) : $values;
+        }
+
+        return $headers;
+    }
+
+    private function captureResponseBody(Response $response): array|string|null
+    {
+        if (! config('insight-api.capture.response_body', true)) {
+            return null;
+        }
+
+        if ($this->shouldSkipResponseBody($response)) {
+            return null;
+        }
+
+        $maxSize = config('insight-api.limits.max_response_size', 64 * 1024);
+        $content = $response->getContent();
+
+        if ($content === false || strlen($content) > $maxSize) {
+            return '[BODY_TOO_LARGE]';
+        }
+
+        $decoded = json_decode($content, true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $decoded;
+        }
+
+        return null;
+    }
+
+    private function shouldSkipResponseBody(Response $response): bool
+    {
+        $contentType = $response->headers->get('Content-Type', '');
+
+        // Only capture JSON responses
+        if (! str_contains($contentType, 'application/json')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function captureResponseHeaders(Response $response): array
+    {
+        $headers = [];
+
+        foreach ($response->headers->all() as $key => $values) {
             $headers[$key] = is_array($values) ? implode(', ', $values) : $values;
         }
 

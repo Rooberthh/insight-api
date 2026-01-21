@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rooberthh\InsightApi\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class InsightApiRequest extends Model
 {
@@ -14,8 +15,6 @@ class InsightApiRequest extends Model
         'method',
         'route_pattern',
         'uri',
-        'headers',
-        'body',
         'ip_address',
         'status_code',
         'response_time_ms',
@@ -27,11 +26,14 @@ class InsightApiRequest extends Model
     protected function casts(): array
     {
         return [
-            'headers' => 'array',
-            'body' => 'array',
             'response_time_ms' => 'float',
             'captured_at' => 'datetime',
         ];
+    }
+
+    public function payload(): HasOne
+    {
+        return $this->hasOne(InsightApiPayload::class, 'request_id');
     }
 
     public function endpoint(): string

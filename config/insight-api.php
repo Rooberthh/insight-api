@@ -19,6 +19,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Capture Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure what data should be captured from requests and responses.
+    |
+    */
+
+    'capture' => [
+        'response_body' => env('INSIGHT_API_CAPTURE_RESPONSE_BODY', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Redaction Rules
     |--------------------------------------------------------------------------
     |
@@ -60,5 +73,6 @@ return [
     */
     'limits' => [
         'max_body_size' => env('INSIGHT_API_MAX_BODY_SIZE', 64 * 1024), // 64KB
+        'max_response_size' => env('INSIGHT_API_MAX_RESPONSE_SIZE', 64 * 1024), // 64KB
     ],
 ];
