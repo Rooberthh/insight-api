@@ -18,7 +18,6 @@ abstract class InsightApiTestCase extends BaseTestCase
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('insight-api.enabled', true);
         $app['config']->set('insight-api.sampling.rate', 1.0);
         $app['config']->set('insight-api.storage.path', sys_get_temp_dir() . '/insight-api-test-' . uniqid() . '.sqlite');
     }
