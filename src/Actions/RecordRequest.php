@@ -34,12 +34,14 @@ class RecordRequest
             ],
         );
 
+        $content = $response->getContent();
+
         $insightRequest->payload()->create(
             [
                 'request_headers' => $request->headers->all(),
                 'request_body' => $request->all(),
                 'response_headers' => $response->headers->all(),
-                'response_body' => json_decode($response->getContent(), associative: true),
+                'response_body' => ! empty($content) ? json_decode($content, associative: true) : null,
             ],
         );
 

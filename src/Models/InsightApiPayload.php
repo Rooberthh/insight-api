@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property array $request_headers
- * @property array $request_body
- * @property array $response_headers
- * @property array $response_body
+ * @property array<mixed, mixed>            $request_headers
+ * @property array<mixed, mixed>             $request_body
+ * @property array<mixed, mixed>             $response_headers
+ * @property array<mixed, mixed>             $response_body
  * @property InsightApiRequest $request
  */
 class InsightApiPayload extends Model
@@ -35,7 +35,7 @@ class InsightApiPayload extends Model
         ];
     }
 
-    /** @return BelongsTo<InsightApiRequest, InsightApiPayload> */
+    /** @return BelongsTo<InsightApiRequest, $this> */
     public function request(): BelongsTo
     {
         return $this->belongsTo(InsightApiRequest::class, 'request_id');

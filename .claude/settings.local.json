@@ -4,7 +4,10 @@
       "Bash(tree:*)",
       "Bash(composer test:*)",
       "Bash(./vendor/bin/pest:*)",
-      "Bash(php -r:*)"
+      "Bash(php -r:*)",
+      "Bash(vendor/bin/phpstan analyse:*)",
+      "Bash(grep:*)",
+      "Bash(./vendor/bin/phpstan:*)"
     ]
   }
 }

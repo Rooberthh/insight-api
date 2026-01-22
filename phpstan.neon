@@ -1,11 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
 parameters:
     paths:
         - src/
 
     # Level 10 is the highest level
-    level: 6
+    level: 7
 
     excludePaths:
         - vendor/*
-        - storage/*
         - tests/*

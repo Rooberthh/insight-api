@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $uri
  * @property string $ip_address
  * @property int $status_code
- * @property float $response_time_Ms
+ * @property float $response_time_ms
  * @property Carbon $captured_at
  * @property InsightApiPayload|null $payload
  */
@@ -40,7 +40,7 @@ class InsightApiRequest extends Model
         ];
     }
 
-    /** @return HasOne<InsightApiPayload, InsightApiRequest> */
+    /** @return HasOne<InsightApiPayload, $this> */
     public function payload(): HasOne
     {
         return $this->hasOne(InsightApiPayload::class, 'request_id');
