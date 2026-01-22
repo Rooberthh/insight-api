@@ -17,7 +17,7 @@ final readonly class InsightApiMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $this->shouldCapture()) {
+        if (! $this->shouldCapture($request)) {
             return $next($request);
         }
 
@@ -32,8 +32,12 @@ final readonly class InsightApiMiddleware
         return $response;
     }
 
-    private function shouldCapture(): bool
+    private function shouldCapture(Request $request): bool
     {
+        if (! $request->expectsJson()) {
+            return false;
+        }
+
         $samplingRate = config('insight-api.sampling.rate', 1.0);
 
         if (! $samplingRate) {

@@ -3,6 +3,7 @@
 namespace Rooberthh\InsightApi\Actions;
 
 use Illuminate\Http\Request;
+use Rooberthh\InsightApi\Exceptions\CannotRecordRequestException;
 use Symfony\Component\HttpFoundation\Response;
 use Rooberthh\InsightApi\Models\InsightApiRequest;
 
@@ -13,9 +14,14 @@ class RecordRequest
      * @param  Response  $response
      * @param  float     $responseTimeMs
      * @return InsightApiRequest
+     * @throws CannotRecordRequestException
      */
     public function handle(Request $request, Response $response, float $responseTimeMs): InsightApiRequest
     {
+        if (! $request->expectsJson()) {
+            throw new CannotRecordRequestException('[RecordRequest] can only store json-responses.');
+        }
+
         $insightRequest = InsightApiRequest::query()->create(
             [
                 'method' => $request->method(),
@@ -42,12 +48,6 @@ class RecordRequest
 
     protected function extractRoutePattern(Request $request): string
     {
-        $route = $request->route();
-
-        if (! $route) {
-            return $request->getRequestUri();
-        }
-
-        return '/' . ltrim($route->uri(), '/');
+        return '/' . ltrim($request->route()->uri(), '/');
     }
 }

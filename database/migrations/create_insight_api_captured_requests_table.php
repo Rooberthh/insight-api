@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->unsignedSmallInteger('status_code');
             $table->float('response_time_ms');
             $table->timestamp('captured_at');
+            $table->timestamps();
 
             $table->index(['method', 'route_pattern']);
             $table->index('captured_at');
@@ -35,6 +36,7 @@ return new class extends Migration {
             // Response payload
             $table->json('response_headers')->nullable();
             $table->json('response_body')->nullable();
+            $table->timestamps();
 
             $table->index('request_id');
         });

@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Rooberthh\InsightApi\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Rooberthh\InsightApi\Models\InsightApiRequest;
 
 final class ListRequestsCommand extends Command
 {
     protected $signature = 'insight-api:requests
-        {--endpoint= : Filter by endpoint (e.g., "GET /api/users/{id}")}
         {--limit=50 : Maximum number of requests to show}';
 
     protected $description = 'List captured API requests';
@@ -21,11 +19,7 @@ final class ListRequestsCommand extends Command
         $limit = (int) $this->option('limit');
         $endpoint = $this->option('endpoint');
 
-        if ($endpoint !== null) {
-            $requests = $this->getByEndpoint($endpoint, $limit);
-        } else {
-            $requests = InsightApiRequest::query()->orderByDesc('captured_at')->limit($limit)->get();
-        }
+        $requests = InsightApiRequest::query()->orderByDesc('captured_at')->limit($limit)->get();
 
         if ($requests->isEmpty()) {
             $this->info('No requests captured yet.');
@@ -51,7 +45,7 @@ final class ListRequestsCommand extends Command
             ])->toArray(),
         );
 
-        $totalCount = InsightApiRequest::count();
+        $totalCount = InsightApiRequest::query()->count();
 
         if ($totalCount > $requests->count()) {
             $this->newLine();
@@ -59,24 +53,6 @@ final class ListRequestsCommand extends Command
         }
 
         return self::SUCCESS;
-    }
-
-    private function getByEndpoint(string $endpoint, int $limit): Collection
-    {
-        $parts = explode(' ', $endpoint, 2);
-
-        if (count($parts) !== 2) {
-            $this->error('Invalid endpoint format. Use "METHOD /path" (e.g., "GET /api/users/{id}")');
-
-            return collect();
-        }
-
-        [$method, $pattern] = $parts;
-
-        return InsightApiRequest::byEndpoint(strtoupper($method), $pattern)
-            ->orderByDesc('captured_at')
-            ->limit($limit)
-            ->get();
     }
 
     private function truncate(string $value, int $length): string

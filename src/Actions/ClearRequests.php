@@ -7,7 +7,7 @@ use Rooberthh\InsightApi\Models\InsightApiRequest;
 
 class ClearRequests
 {
-    public function handle()
+    public function handle(): void
     {
         InsightApiPayload::query()->delete();
         InsightApiRequest::query()->delete();
