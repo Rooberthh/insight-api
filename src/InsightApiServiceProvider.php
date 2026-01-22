@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rooberthh\InsightApi;
 
 use Illuminate\Support\ServiceProvider;
+use Rooberthh\InsightApi\Console\Commands\ClearRequestsCommand;
 use Rooberthh\InsightApi\Console\Commands\ListRequestsCommand;
 use Rooberthh\InsightApi\Services\RedactionService;
 
@@ -30,6 +31,7 @@ class InsightApiServiceProvider extends ServiceProvider
             $this->commands(
                 [
                     ListRequestsCommand::class,
+                    ClearRequestsCommand::class,
                 ],
             );
         }

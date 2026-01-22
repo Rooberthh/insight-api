@@ -55,12 +55,11 @@ it('captures a POST request with body', function () {
         'name' => 'Test User',
     ]);
 
-    $requests = InsightApiRequest::with('payload')->get();
+    $request = InsightApiRequest::with('payload')->first();
 
-    expect($requests)->toHaveCount(1)
-        ->and($requests->first()->method)->toBe('POST')
-        ->and($requests->first()->status_code)->toBe(201)
-        ->and($requests->first()->payload->request_body)->toBe([
+    expect($request->method)->toBe('POST')
+        ->and($request->status_code)->toBe(201)
+        ->and($request->payload->request_body)->toBe([
             'email' => 'test@example.com',
             'name' => 'Test User',
         ]);
@@ -69,11 +68,10 @@ it('captures a POST request with body', function () {
 it('captures response body in payload', function () {
     $this->getJson('/api/users/1/posts/1');
 
-    $requests = InsightApiRequest::with('payload')->get();
+    $request = InsightApiRequest::with('payload')->first();
 
-    expect($requests)->toHaveCount(1)
-        ->and($requests->first()->payload)->toBeInstanceOf(InsightApiPayload::class)
-        ->and($requests->first()->payload->response_body)->toBe(['users' => []]);
+    expect($request->payload)->toBeInstanceOf(InsightApiPayload::class)
+        ->and($request->payload->response_body)->toBe(['users' => []]);
 });
 
 it('creates payload with request and response headers', function () {

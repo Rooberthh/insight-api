@@ -11,7 +11,7 @@ class RecordRequest
     /**
      * @param  Request   $request
      * @param  Response  $response
-     * @param  int                        $responseTimeMs
+     * @param  float     $responseTimeMs
      * @return InsightApiRequest
      */
     public function handle(Request $request, Response $response, float $responseTimeMs): InsightApiRequest

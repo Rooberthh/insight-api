@@ -12,31 +12,11 @@ final class ListRequestsCommand extends Command
 {
     protected $signature = 'insight-api:requests
         {--endpoint= : Filter by endpoint (e.g., "GET /api/users/{id}")}
-        {--limit=50 : Maximum number of requests to show}
-        {--clear : Clear all captured requests}';
+        {--limit=50 : Maximum number of requests to show}';
 
     protected $description = 'List captured API requests';
 
     public function handle(): int
-    {
-        if ($this->option('clear')) {
-            return $this->clearRequests();
-        }
-
-        return $this->listRequests();
-    }
-
-    private function clearRequests(): int
-    {
-        $count = InsightApiRequest::count();
-        InsightApiRequest::truncate();
-
-        $this->info("Cleared {$count} captured request(s).");
-
-        return self::SUCCESS;
-    }
-
-    private function listRequests(): int
     {
         $limit = (int) $this->option('limit');
         $endpoint = $this->option('endpoint');
@@ -44,7 +24,7 @@ final class ListRequestsCommand extends Command
         if ($endpoint !== null) {
             $requests = $this->getByEndpoint($endpoint, $limit);
         } else {
-            $requests = InsightApiRequest::orderByDesc('captured_at')->limit($limit)->get();
+            $requests = InsightApiRequest::query()->orderByDesc('captured_at')->limit($limit)->get();
         }
 
         if ($requests->isEmpty()) {
