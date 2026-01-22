@@ -1,43 +1,58 @@
 <?php
 
-use Illuminate\Http\JsonResponse;
 use Rooberthh\InsightApi\Actions\RecordRequest;
-use Rooberthh\InsightApi\Exceptions\CannotRecordRequestException;
+use Rooberthh\InsightApi\DataObjects\CreateApiRequest;
 use Rooberthh\InsightApi\Models\InsightApiRequest;
 
-it('can capture a json request', function () {
-    Route::get('/api/users/{user}', fn() => null)->name('test.route');
-
-    $request = Request::create('/api/users/123', 'GET');
-    $request->headers->set('Accept', 'application/json');
-    $request->setRouteResolver(fn() => app('router')->getRoutes()->match($request));
-
+it('creates InsightApiRequest from CreateApiRequest DTO', function () {
     expect(InsightApiRequest::query()->get())->toBeEmpty();
 
-    $response = new JsonResponse(['user' => []], 200);
+    $requestData = new CreateApiRequest(
+        status: 200,
+        method: 'GET',
+        routePattern: '/api/users/{user}',
+        uri: '/api/users/123',
+        ipAddress: '127.0.0.1',
+        responseTimeMs: 50.0,
+        requestId: 'test-fingerprint-123',
+        requestHeaders: ['accept' => ['application/json']],
+        requestBody: ['filter' => 'active'],
+        responseHeaders: ['content-type' => ['application/json']],
+        responseBody: ['user' => ['id' => 123]],
+    );
 
     $action = new RecordRequest();
-    $apiRequest = $action->handle($request, $response, 50.0);
+    $apiRequest = $action->handle($requestData);
 
     expect($apiRequest->method)->toBe('GET')
         ->and($apiRequest->route_pattern)->toBe('/api/users/{user}')
-        ->and($apiRequest->status_code)->toBe(200)
-        ->and($apiRequest->payload->request_headers)->toBe($request->headers->all())
-        ->and($apiRequest->payload->request_body)->toBe($request->all())
-        ->and($apiRequest->payload->response_headers)->toBe($response->headers->all())
-        ->and($apiRequest->payload->response_body)->toBe(json_decode(json_encode(['user' => []]), true));
+        ->and($apiRequest->uri)->toBe('/api/users/123')
+        ->and($apiRequest->ip_address)->toBe('127.0.0.1')
+        ->and($apiRequest->status)->toBe(200)
+        ->and($apiRequest->response_time_ms)->toBe(50.0)
+        ->and($apiRequest->request_id)->toBe('test-fingerprint-123');
 });
 
-it('can throws an exception if the request is not expection json', function () {
-    Route::get('/api/users/{user}', fn() => null)->name('test.route');
-
-    $request = Request::create('/api/users/123', 'GET');
-    $request->setRouteResolver(fn() => app('router')->getRoutes()->match($request));
-
-    expect(InsightApiRequest::query()->get())->toBeEmpty();
-
-    $response = new JsonResponse(['user' => []], 200);
+it('creates payload with headers and bodies from DTO', function () {
+    $requestData = new CreateApiRequest(
+        status: 201,
+        method: 'POST',
+        routePattern: '/api/posts',
+        uri: '/api/posts',
+        ipAddress: '192.168.1.1',
+        responseTimeMs: 75.5,
+        requestId: 'post-fingerprint-456',
+        requestHeaders: ['accept' => ['application/json'], 'x-custom' => ['value']],
+        requestBody: ['title' => 'New Post', 'content' => 'Content here'],
+        responseHeaders: ['content-type' => ['application/json']],
+        responseBody: ['created' => true, 'id' => 456],
+    );
 
     $action = new RecordRequest();
-    $action->handle($request, $response, 50.0);
-})->throws(CannotRecordRequestException::class);
+    $apiRequest = $action->handle($requestData);
+
+    expect($apiRequest->payload->request_headers)->toBe($requestData->requestHeaders)
+        ->and($apiRequest->payload->request_body)->toBe($requestData->requestBody)
+        ->and($apiRequest->payload->response_headers)->toBe($requestData->responseHeaders)
+        ->and($apiRequest->payload->response_body)->toBe($requestData->responseBody);
+});

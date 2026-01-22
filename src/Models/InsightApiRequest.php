@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
+ * @property string $request_id
  * @property string $method
  * @property string $route_pattern
  * @property string $uri
  * @property string $ip_address
- * @property int $status_code
+ * @property int $status
  * @property float $response_time_ms
  * @property Carbon $captured_at
  * @property InsightApiPayload|null $payload
@@ -23,11 +24,12 @@ class InsightApiRequest extends Model
     protected $table = 'insight_api_requests';
 
     protected $fillable = [
+        'request_id',
         'method',
         'route_pattern',
         'uri',
         'ip_address',
-        'status_code',
+        'status',
         'response_time_ms',
         'captured_at',
     ];

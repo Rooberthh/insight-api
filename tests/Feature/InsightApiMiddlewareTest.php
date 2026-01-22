@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
+use Rooberthh\InsightApi\DataObjects\CreateApiRequest;
 use Rooberthh\InsightApi\Http\Middleware\InsightApiMiddleware;
-use Rooberthh\InsightApi\Models\InsightApiPayload;
-use Rooberthh\InsightApi\Models\InsightApiRequest;
+use Rooberthh\InsightApi\Jobs\StoreApiRequestJob;
 
 beforeEach(function () {
+    Queue::fake();
+
     Route::middleware(InsightApiMiddleware::class)->group(function () {
         $getRoute = '/api/users/{user}/posts/{post}';
         $postRoute = '/api/users/{user}/posts/';
@@ -20,65 +23,55 @@ beforeEach(function () {
     });
 });
 
-it('captures a GET request', function () {
-    expect(InsightApiRequest::all())->toBeEmpty();
-
-    $uri = '/api/users/1/posts/1';
-
-    $this->getJson($uri);
-
-    $requests = InsightApiRequest::all();
-
-    expect($requests)->toHaveCount(1)
-        ->and($requests->first()->method)->toBe('GET')
-        ->and($requests->first()->route_pattern)->toBe($this->getRoute)
-        ->and($requests->first()->status_code)->toBe(200);
-});
-
-it('does not capture a get request is sampling rate is set to 0', function () {
+it('does not dispatch job when sampling rate is set to 0', function () {
     config()->set('insight-api.sampling.rate', 0.0);
 
-    expect(InsightApiRequest::all())->toBeEmpty();
-
     $uri = '/api/users/1/posts/1';
 
     $this->getJson($uri);
 
-    $requests = InsightApiRequest::all();
-
-    expect($requests)->toHaveCount(0);
+    Queue::assertNothingPushed();
 });
 
-it('captures a POST request with body', function () {
-    $this->postJson('/api/users/1/posts', [
+it('dispatches job for GET request with correct data', function () {
+    $uri = '/api/users/1/posts/1';
+
+    $this->getJson($uri);
+
+    Queue::assertPushed(StoreApiRequestJob::class, function (StoreApiRequestJob $job) use ($uri) {
+        $data = $job->request;
+
+        return ($data instanceof CreateApiRequest)
+            && ($data->method === 'GET')
+            && $data->routePattern === $this->getRoute
+            && $data->uri === $uri
+            && $data->status === 200
+            && $job->request->responseBody === ['users' => []];
+    });
+});
+
+it('dispatches job for POST request with request body', function () {
+    $requestBody = [
         'email' => 'test@example.com',
         'name' => 'Test User',
-    ]);
+    ];
 
-    $request = InsightApiRequest::with('payload')->first();
+    $this->postJson('/api/users/1/posts', $requestBody, ['X-Custom-Header' => 'test-value']);
 
-    expect($request->method)->toBe('POST')
-        ->and($request->status_code)->toBe(201)
-        ->and($request->payload->request_body)->toBe([
-            'email' => 'test@example.com',
-            'name' => 'Test User',
-        ]);
+    Queue::assertPushed(StoreApiRequestJob::class, function (StoreApiRequestJob $job) use ($requestBody) {
+        $data = $job->request;
+
+        return $data->method === 'POST'
+            && $data->status === 201
+            && $data->requestBody === $requestBody
+            && isset($data->requestHeaders['x-custom-header']);
+    });
 });
 
-it('captures response body in payload', function () {
-    $this->getJson('/api/users/1/posts/1');
+it('does not dispatch job for non-JSON requests', function () {
+    Route::get('/web/page', fn() => response('HTML content'))->middleware(InsightApiMiddleware::class);
 
-    $request = InsightApiRequest::with('payload')->first();
+    $this->get('/web/page');
 
-    expect($request->payload)->toBeInstanceOf(InsightApiPayload::class)
-        ->and($request->payload->response_body)->toBe(['users' => []]);
-});
-
-it('creates payload with request and response headers', function () {
-    $this->getJson('/api/users/1/posts/1', ['X-Custom-Header' => 'test-value']);
-
-    $request = InsightApiRequest::with('payload')->first();
-
-    expect($request->payload->request_headers)->toHaveKey('x-custom-header')
-        ->and($request->payload->response_headers)->toHaveKey('content-type');
+    Queue::assertNothingPushed();
 });

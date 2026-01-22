@@ -6,15 +6,12 @@ namespace Rooberthh\InsightApi\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Rooberthh\InsightApi\Actions\RecordRequest;
+use Rooberthh\InsightApi\DataObjects\CreateApiRequest;
+use Rooberthh\InsightApi\Jobs\StoreApiRequestJob;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class InsightApiMiddleware
 {
-    public function __construct(
-        private RecordRequest $recordRequestAction,
-    ) {}
-
     public function handle(Request $request, Closure $next): Response
     {
         if (! $this->shouldCapture($request)) {
@@ -25,9 +22,13 @@ final readonly class InsightApiMiddleware
 
         $response = $next($request);
 
-        $responseTimeMs = (microtime(true) - $startTime) * 1000;
+        $requestData = CreateApiRequest::fromRequestResponse(
+            request: $request,
+            response: $response,
+            responseTimeMs: (microtime(true) - $startTime) * 1000,
+        );
 
-        $this->recordRequestAction->handle($request, $response, $responseTimeMs);
+        StoreApiRequestJob::dispatch($requestData);
 
         return $response;
     }
