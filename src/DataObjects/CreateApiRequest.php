@@ -2,6 +2,7 @@
 
 namespace Rooberthh\InsightApi\DataObjects;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -25,6 +26,7 @@ readonly class CreateApiRequest
         public array $requestBody,
         public array $responseHeaders,
         public array $responseBody,
+        public ?Model $requestable,
     ) {
         //
     }
@@ -49,6 +51,7 @@ readonly class CreateApiRequest
             requestBody: $request->all(),
             responseHeaders: $response->headers->all(),
             responseBody: $responseBody ?? [],
+            requestable: $request->user(),
         );
     }
 

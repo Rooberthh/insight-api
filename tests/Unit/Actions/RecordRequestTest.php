@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Foundation\Auth\User;
+use Orchestra\Testbench\Factories\UserFactory;
 use Rooberthh\InsightApi\Actions\RecordRequest;
 use Rooberthh\InsightApi\DataObjects\CreateApiRequest;
 use Rooberthh\InsightApi\Models\InsightApiRequest;
@@ -19,6 +21,7 @@ it('creates InsightApiRequest from CreateApiRequest DTO', function () {
         requestBody: ['filter' => 'active'],
         responseHeaders: ['content-type' => ['application/json']],
         responseBody: ['user' => ['id' => 123]],
+        requestable: null,
     );
 
     $action = new RecordRequest();
@@ -46,6 +49,7 @@ it('creates payload with headers and bodies from DTO', function () {
         requestBody: ['title' => 'New Post', 'content' => 'Content here'],
         responseHeaders: ['content-type' => ['application/json']],
         responseBody: ['created' => true, 'id' => 456],
+        requestable: null,
     );
 
     $action = new RecordRequest();
@@ -55,4 +59,35 @@ it('creates payload with headers and bodies from DTO', function () {
         ->and($apiRequest->payload->request_body)->toBe($requestData->requestBody)
         ->and($apiRequest->payload->response_headers)->toBe($requestData->responseHeaders)
         ->and($apiRequest->payload->response_body)->toBe($requestData->responseBody);
+});
+
+it('can associate the request to an authenticated user model', function () {
+    $user = UserFactory::new()->create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $requestData = new CreateApiRequest(
+        status: 200,
+        method: 'GET',
+        routePattern: '/api/profile',
+        uri: '/api/profile',
+        ipAddress: '192.168.1.1',
+        responseTimeMs: 45.2,
+        requestId: 'auth-fingerprint-789',
+        requestHeaders: ['accept' => ['application/json']],
+        requestBody: [],
+        responseHeaders: ['content-type' => ['application/json']],
+        responseBody: ['user' => ['id' => $user->id]],
+        requestable: $user,
+    );
+
+    $action = new RecordRequest();
+    $apiRequest = $action->handle($requestData);
+
+    expect($apiRequest->requestable_type)->toBe(User::class)
+        ->and($apiRequest->requestable_id)->toBe($user->id)
+        ->and($apiRequest->requestable)->toBeInstanceOf(User::class)
+        ->and($apiRequest->requestable->id)->toBe($user->id)
+        ->and($apiRequest->requestable->email)->toBe('test@example.com');
 });

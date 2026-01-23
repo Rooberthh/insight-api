@@ -7,9 +7,11 @@ namespace Rooberthh\InsightApi\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property string $request_id
+ * @property Model|null $requestable
  * @property string $method
  * @property string $route_pattern
  * @property string $uri
@@ -40,6 +42,12 @@ class InsightApiRequest extends Model
             'response_time_ms' => 'float',
             'captured_at' => 'datetime',
         ];
+    }
+
+    /** @return null|MorphTo<Model, $this> */
+    public function requestable(): ?MorphTo
+    {
+        return $this->morphTo('requestable');
     }
 
     /** @return HasOne<InsightApiPayload, $this> */

@@ -9,7 +9,7 @@ class RecordRequest
 {
     public function handle(CreateApiRequest $data): InsightApiRequest
     {
-        $insightRequest = InsightApiRequest::query()->create([
+        $insightRequest = InsightApiRequest::query()->make([
             'request_id' => $data->requestId,
             'method' => $data->method,
             'route_pattern' => $data->routePattern,
@@ -19,6 +19,12 @@ class RecordRequest
             'response_time_ms' => $data->responseTimeMs,
             'captured_at' => now(),
         ]);
+
+        if ($data->requestable !== null) {
+            $insightRequest->requestable()->associate($data->requestable);
+        }
+
+        $insightRequest->save();
 
         $insightRequest->payload()->create([
             'request_headers' => $data->requestHeaders,

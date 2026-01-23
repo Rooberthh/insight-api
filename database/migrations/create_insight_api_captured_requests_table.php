@@ -12,6 +12,7 @@ return new class extends Migration {
         Schema::create('insight_api_requests', function (Blueprint $table) {
             $table->id();
             $table->string('request_id')->unique();
+            $table->nullableMorphs('requestable');
             $table->unsignedInteger('status');
             $table->string('method');
             $table->string('route_pattern');

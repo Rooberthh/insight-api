@@ -26,6 +26,7 @@ abstract class InsightApiTestCase extends BaseTestCase
     {
         parent::setUp();
 
+        $this->loadLaravelMigrations();
         $this->artisan('migrate')->run();
     }
 }
