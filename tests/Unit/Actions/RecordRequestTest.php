@@ -85,9 +85,5 @@ it('can associate the request to an authenticated user model', function () {
     $action = new RecordRequest();
     $apiRequest = $action->handle($requestData);
 
-    expect($apiRequest->requestable_type)->toBe(User::class)
-        ->and($apiRequest->requestable_id)->toBe($user->id)
-        ->and($apiRequest->requestable)->toBeInstanceOf(User::class)
-        ->and($apiRequest->requestable->id)->toBe($user->id)
-        ->and($apiRequest->requestable->email)->toBe('test@example.com');
+    expect($apiRequest->requestable)->toBe($user);
 });
