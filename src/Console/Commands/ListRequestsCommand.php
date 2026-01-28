@@ -17,7 +17,6 @@ final class ListRequestsCommand extends Command
     public function handle(): int
     {
         $limit = (int) $this->option('limit');
-        $endpoint = $this->option('endpoint');
 
         $requests = InsightApiRequest::query()->orderByDesc('captured_at')->limit($limit)->get();
 
@@ -34,13 +33,13 @@ final class ListRequestsCommand extends Command
         $this->newLine();
 
         $this->table(
-            ['Method', 'Route Pattern', 'IP', 'Status', 'Time (ms)', 'Captured At'],
+            ['Method', 'Status', 'Route Pattern', 'Time (ms)', 'IP', 'Captured At'],
             $requests->map(fn($request) => [
                 $request->method,
+                $this->colorStatus($request->status),
                 $this->truncate($request->route_pattern, 40),
-                $request->ip_address,
-                $this->colorStatus($request->status_code),
                 number_format($request->response_time_ms, 2),
+                $request->ip_address,
                 $request->captured_at->format('Y-m-d H:i:s'),
             ])->toArray(),
         );
