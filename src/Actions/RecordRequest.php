@@ -7,10 +7,9 @@ use Rooberthh\InsightApi\Models\InsightApiRequest;
 
 class RecordRequest
 {
-    public function handle(CreateApiRequest $data): InsightApiRequest
+    public function handle(CreateApiRequest $data): InsightApiRequest|null
     {
         $insightRequest = InsightApiRequest::query()->make([
-            'request_id' => $data->requestId,
             'method' => $data->method,
             'route_pattern' => $data->routePattern,
             'uri' => $data->uri,

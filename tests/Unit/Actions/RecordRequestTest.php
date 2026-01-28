@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Auth\User;
 use Orchestra\Testbench\Factories\UserFactory;
 use Rooberthh\InsightApi\Actions\RecordRequest;
 use Rooberthh\InsightApi\DataObjects\CreateApiRequest;
@@ -16,7 +15,6 @@ it('creates InsightApiRequest from CreateApiRequest DTO', function () {
         uri: '/api/users/123',
         ipAddress: '127.0.0.1',
         responseTimeMs: 50.0,
-        requestId: 'test-fingerprint-123',
         requestHeaders: ['accept' => ['application/json']],
         requestBody: ['filter' => 'active'],
         responseHeaders: ['content-type' => ['application/json']],
@@ -32,8 +30,7 @@ it('creates InsightApiRequest from CreateApiRequest DTO', function () {
         ->and($apiRequest->uri)->toBe('/api/users/123')
         ->and($apiRequest->ip_address)->toBe('127.0.0.1')
         ->and($apiRequest->status)->toBe(200)
-        ->and($apiRequest->response_time_ms)->toBe(50.0)
-        ->and($apiRequest->request_id)->toBe('test-fingerprint-123');
+        ->and($apiRequest->response_time_ms)->toBe(50.0);
 });
 
 it('creates payload with headers and bodies from DTO', function () {
@@ -44,7 +41,6 @@ it('creates payload with headers and bodies from DTO', function () {
         uri: '/api/posts',
         ipAddress: '192.168.1.1',
         responseTimeMs: 75.5,
-        requestId: 'post-fingerprint-456',
         requestHeaders: ['accept' => ['application/json'], 'x-custom' => ['value']],
         requestBody: ['title' => 'New Post', 'content' => 'Content here'],
         responseHeaders: ['content-type' => ['application/json']],
@@ -74,7 +70,6 @@ it('can associate the request to an authenticated user model', function () {
         uri: '/api/profile',
         ipAddress: '192.168.1.1',
         responseTimeMs: 45.2,
-        requestId: 'auth-fingerprint-789',
         requestHeaders: ['accept' => ['application/json']],
         requestBody: [],
         responseHeaders: ['content-type' => ['application/json']],
